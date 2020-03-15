@@ -1,4 +1,4 @@
-all: 	detect-image
+all: 	detect-image libfacedetect.so
 
 SRC = \
 src/facedetectcnn.cpp \
@@ -27,7 +27,10 @@ LFLAGS = \
 	g++ $(CFLAGS) -c $< -o $@
 
 $(OBJ): %.o: %.cpp $(MAKEFILES)
-	g++ $(CFLAGS) -Og -c $< -o $@
+	g++ $(CFLAGS) -fPIC -O0 -c $< -o $@
+
+libfacedetect.so: $(OBJ)
+	g++ $(CFLAGS) -fPIC -shared -o $@ $(OBJ) 
 
 detect-image: $(OBJ) $(MAKEFILES)
 	g++ $(OBJ) detect-image.cpp $(CFLAGS) $(LFLAGS) -Og -o detect-image

@@ -1,4 +1,6 @@
-all: 	detect-image libfacedetect.so
+all: 	libfacedetect.so detect-image
+
+MAKEFILES = makefile
 
 SRC = \
 src/facedetectcnn.cpp \
@@ -8,7 +10,6 @@ src/facedetectcnn-model.cpp \
 OBJ = $(SRC:.cpp=.o)
 
 CFLAGS = \
--O3 \
 -D_ENABLE_AVX2 \
 -mavx2 \
 -mfma \
@@ -27,17 +28,17 @@ LFLAGS = \
 	g++ $(CFLAGS) -c $< -o $@
 
 $(OBJ): %.o: %.cpp $(MAKEFILES)
-	g++ $(CFLAGS) -fPIC -O0 -c $< -o $@
+	g++ $(CFLAGS) -fPIC -O3 -c $< -o $@
 
 libfacedetect.so: $(OBJ)
 	g++ $(CFLAGS) -fPIC -shared -o $@ $(OBJ) 
 
 detect-image: $(OBJ) $(MAKEFILES)
-	g++ $(OBJ) detect-image.cpp $(CFLAGS) $(LFLAGS) -Og -o detect-image
+	g++ detect-image.cpp $(CFLAGS) $(LFLAGS) -Og -o detect-image -lfacedetect -L.
 
 test:	$(TST_SRC) $(MAKEFILES)
-	g++ $(TST_SRC) -ITest_Environment/include $(CFLAGS) -o test_grio
+	detect-image img/
 
 clean:
-	-@rm -rf detect-image $(OBJ)
+	-@rm -rf detect-image $(OBJ) libfacedetect.so
 

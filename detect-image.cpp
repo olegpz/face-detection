@@ -100,9 +100,10 @@ int main(int argc, char* argv[])
         //show the score of the face. Its range is [0-100]
         char sScore[256];
         snprintf(sScore, 256, "%d", confidence);
-        cv::putText(result_image, sScore, cv::Point(x, y-3), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
+        // cv::putText(result_image, sScore, cv::Point(x, y-3), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
         //draw face rectangle
-		rectangle(result_image, Rect(x, y, w, h), Scalar(0, 255, 0), 2);
+		// rectangle(result_image, Rect(x, y, w, h), Scalar(0, 255, 0), 2);
+        blur(result_image(Rect(x, y, w, h)), result_image(Rect(x, y, w, h)), Size(7, 7));
         //draw five face landmarks in different colors
         // cv::circle(result_image, cv::Point(p[5], p[5 + 1]), 1, cv::Scalar(255, 0, 0), 2);
         // cv::circle(result_image, cv::Point(p[5 + 2], p[5 + 3]), 1, cv::Scalar(0, 0, 255), 2);

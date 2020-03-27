@@ -485,7 +485,7 @@ bool maxpooling2x2S2(const CDataBlob<unsigned char> *inputData, CDataBlob<unsign
         return false;
     }
 
-    int lineElementStep = inputData->width * inputData->channelStep;
+    // int lineElementStep = inputData->width * inputData->channelStep;
 
     outputData->create(outputW, outputH, outputC);
     outputData->scale = inputData->scale;
@@ -891,7 +891,7 @@ bool detection_output(const CDataBlob<float> * priorbox, const CDataBlob<float> 
     std::stable_sort(score_bbox_vec.begin(), score_bbox_vec.end(), SortScoreBBoxPairDescend);
 
     // Keep top_k scores if needed.
-    if (top_k > -1 && top_k < score_bbox_vec.size()) {
+    if (top_k > -1 && top_k < (int)score_bbox_vec.size()) {
         score_bbox_vec.resize(top_k);
     }
 
@@ -901,7 +901,7 @@ bool detection_output(const CDataBlob<float> * priorbox, const CDataBlob<float> 
     while (score_bbox_vec.size() != 0) {
         const NormalizedBBox bb1 = score_bbox_vec.front().second;
         bool keep = true;
-        for (int k = 0; k < final_score_bbox_vec.size(); ++k)
+        for (int k = 0; k < (int)final_score_bbox_vec.size(); ++k)
         {
             if (keep) 
             {
@@ -919,7 +919,7 @@ bool detection_output(const CDataBlob<float> * priorbox, const CDataBlob<float> 
         }
         score_bbox_vec.erase(score_bbox_vec.begin());
     }
-    if (keep_top_k > -1 && keep_top_k < final_score_bbox_vec.size()) {
+    if (keep_top_k > -1 && keep_top_k < (int)final_score_bbox_vec.size()) {
         final_score_bbox_vec.resize(keep_top_k);
     }
 

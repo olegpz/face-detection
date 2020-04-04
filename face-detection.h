@@ -26,6 +26,8 @@
 #ifndef FACE_DETECTION_H
 #define FACE_DETECTION_H
 
+#include "facedetectcnn.h"
+
 struct face_rectangle
 {
   int x,y;
@@ -34,9 +36,9 @@ struct face_rectangle
 
 struct image_info
 {
-  std::string     res_file_name;
-  int             Nfaces;
-  face_rectangle  *face;
+  std::string       res_file_name;
+  int               Nfaces;
+  vector<FaceRect>  face;
 };
 
 //define the buffer size. Do not change the size!

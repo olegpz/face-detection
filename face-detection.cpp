@@ -99,90 +99,60 @@ vector<image_info> face_detection(String folder, String res_folder)
   glob(folder, files, true);
 
   size_t Nfiles = files.size();
-  vector<image_info> img_inf(Nfiles);
+  vector<image_info> image(Nfiles);
 
   for (size_t k = 0; k < Nfiles; k++)
   {
-      // load an image and convert it to gray (single-channel)
-      img_inf[k].res_file_name = files[k];
-      cout << files[k] << endl;
-      Mat image = imread(files[k]); 
-      if(image.empty())
+      // load an image
+      image[k].res_file_name = files[k];
+      cout << "File : " << files[k] << endl;
+      Mat in_image = imread(files[k]); 
+      if(in_image.empty())
       {
           fprintf(stderr, "Can not load the image file %s.\n", files[k].c_str());
-          img_inf[0] = {0, 0};
-          return img_inf;
-      }
-
-      int * pResults = NULL; 
-      //pBuffer is used in the detection functions.
-      //If you call functions in multiple threads, please create one buffer for each thread!
-      unsigned char * pBuffer = (unsigned char *)malloc(DETECT_BUFFER_SIZE);
-      if (!pBuffer)
-      {
-          fprintf(stderr, "Can not alloc buffer.\n");
-          img_inf[0] = {0, 0};
-          return img_inf;
+          image[0] = {0, 0};
+          return image;
       }
 
       ///////////////////////////////////////////
       // CNN face detection 
       // Best detection rate
       //////////////////////////////////////////
-      //!!! The input image must be a BGR one (three-channel) instead of RGB
-      //!!! DO NOT RELEASE pResults !!!
       TickMeter cvtm;
       cvtm.start();
 
-      pResults = facedetect_cnn(pBuffer, (unsigned char*)(image.ptr(0)), image.cols, image.rows, (int)image.step);
+      image[k].face = objectdetect_cnn((unsigned char*)(in_image.ptr(0)), in_image.cols, in_image.rows, in_image.step);
       
       cvtm.stop();    
       printf("time = %gms\n", cvtm.getTimeMilli());
-      
-      printf("%d faces detected.\n", (pResults ? *pResults : 0));
-      Mat result_image = image.clone();
 
       //print the detection results
-      img_inf[k].Nfaces = (pResults ? *pResults : 0);
-      img_inf[k].face = (pResults ? new face_rectangle[*pResults] : NULL);
+      
+      image[k].Nfaces =(int)image[k].face.size();
+      printf("%d faces detected.\n", image[k].Nfaces);
+      Mat result_image = in_image.clone();
 
-      for(int i = 0; i < (pResults ? *pResults : 0); i++)
+      for(int i = 0; i < image[k].Nfaces; i++)
       {
-        short * p = ((short*)(pResults+1))+142*i;
-        int confidence = p[0];
-        int x = p[1];
-        int y = p[2];
-        int w = p[3];
-        int h = p[4];
-        
-        //show the score of the face. Its range is [0-100]
-        char sScore[256];
-        snprintf(sScore, 256, "%d", confidence);
-        //draw face rectangle
-        // rectangle(result_image, Rect(x, y, w, h), Scalar(0, 255, 0), 2);
+        int x = image[k].face[i].x;
+        int y = image[k].face[i].y;
+        int w = image[k].face[i].w;
+        int h = image[k].face[i].h;
+
         blur(result_image(Rect(x, y, w, h)), result_image(Rect(x, y, w, h)), Size(w/4, h/4));
-        
-        img_inf[k].face[i] = {.x = x, .y =y, .w = w, .h = h};
-        //print the result
-        // printf("face %d: confidence=%d, [%d, %d, %d, %d]\n", i, confidence, x, y, w, h);
- 
+
       } // end for detect faces
 
       // imshow("result", result_image);
       resize(result_image, result_image, Size(result_image.cols/2, result_image.rows/2));
-      // imshow("res_img", result_image);
-      img_inf[k].res_file_name = img2res(files[k],folder,res_folder);
-      imwrite(img_inf[k].res_file_name, result_image);
+      image[k].res_file_name = img2res(files[k],folder,res_folder);
+      imwrite(image[k].res_file_name, result_image);
 
       // waitKey();
-
-      //release the buffer
-      free(pBuffer);
   } // end for files
 
-  // fjs << js;
-  write2json(json_file, img_inf);
+  write2json(json_file, image);
 
-  return img_inf;
+  return image;
   
 } /* face_detection */

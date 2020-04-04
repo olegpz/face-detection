@@ -42,15 +42,8 @@ the use of this software, even if advised of the possibility of such damage.
 #include <opencv2/opencv.hpp>
 #include "face-detection.h"
 
-// #include "json.hpp"
-// using json = nlohmann::json;
-
 int main(int argc, char* argv[]) 
 {
-  // std::ifstream i(".vscode/launch.json");
-  // json j;
-  // i >> j;
-  // std::cout << std::setw(4) << j << std::endl;
 
   if (argc != 3)
   {
@@ -61,4 +54,5 @@ int main(int argc, char* argv[])
   std::vector<image_info> img_inf = face_detection(cv::String(argv[1]),cv::String(argv[2]));
 
 	return 0;
-}
+
+} /* main */

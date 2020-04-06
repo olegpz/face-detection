@@ -38,6 +38,7 @@ struct image_info
 {
   std::string       res_file_name;
   int               Nfaces;
+  vector<double>    confidence;
   vector<FaceRect>  face;
 };
 

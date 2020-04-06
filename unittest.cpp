@@ -49,75 +49,55 @@
 using namespace std;
 using namespace cv;
 
-// namespace {
-
-// Step 2. Use the TEST macro to define your tests.
-//
-// TEST has two parameters: the test case name and the test name.
-// After using the macro, you should define your test logic between a
-// pair of braces.  You can use a bunch of macros to indicate the
-// success or failure of a test.  EXPECT_TRUE and EXPECT_EQ are
-// examples of such macros.  For a complete list, see gtest.h.
-//
-// <TechnicalDetails>
-//
-// In Google Test, tests are grouped into test cases.  This is how we
-// keep test code organized.  You should put logically related tests
-// into the same test case.
-//
-// The test case name and the test name should both be valid C++
-// identifiers.  And you should not use underscore (_) in the names.
-//
-// Google Test guarantees that each test you define is run exactly
-// once, but it makes no guarantee on the order the tests are
-// executed.  Therefore, you should write your tests in such a way
-// that their results don't depend on their order.
-//
-// </TechnicalDetails>
+static vector<String> files;
 
 // Tests function objectdetect_cnn.
 
 // Tests face detection.
-#define FACETEST(NAME,FILE,NFACES) \
-TEST(FaceDetectionTest,NAME) { \
-  Mat               in_image; \
-  vector<FaceRect>  face; \
-  /* load an image */ \
-  try { in_image = imread(FILE); } catch (exception& e) { cerr << e.what() << endl; } \
-  /* call a face detect function */ \
-  face = objectdetect_cnn((unsigned char*)(in_image.ptr(0)), in_image.cols, in_image.rows, in_image.step); \
-  /* Tests face detection of image with faces. */ \
-  EXPECT_EQ(NFACES, face.size()); \
+#define FACETEST(NAME,NFACES)                                                                               \
+TEST(FaceDetectionTest,NAME) {                                                                              \
+  String            file = #NAME;                                                                           \
+  Mat               in_image;                                                                               \
+  vector<FaceRect>  face;                                                                                   \
+  /* load an image */                                                                                       \
+  size_t k;                                                                                                 \
+  for (k = 0; k < files.size(); k++) {                                                                      \
+    size_t t = files[k].find(file);                                                                         \
+    if (t < files[k].length()) break;                                                                       \
+  }                                                                                                         \
+  try { in_image = imread(files[k]); } catch (exception& e) { cerr << e.what() << endl; }                   \
+  /* call a face detect function */                                                                         \
+  face = objectdetect_cnn((unsigned char*)(in_image.ptr(0)), in_image.cols, in_image.rows, in_image.step);  \
+  /* Tests face detection of image with faces. */                                                           \
+  EXPECT_EQ(NFACES, face.size());                                                                           \
 }
 
-FACETEST(2007_007763,"img/faces/2007_007763.jpg",7)
-FACETEST(2008_001009,"img/faces/2008_001009.jpg",2)
-FACETEST(2008_001322,"img/faces/2008_001322.jpg",3)
-FACETEST(2008_002079,"img/faces/2008_002079.jpg",6)
-FACETEST(2008_002470,"img/faces/2008_002470.jpg",6)
-FACETEST(2008_002506,"img/faces/2008_002506.jpg",3)
-FACETEST(2008_004176,"img/faces/2008_004176.jpg",7)
-FACETEST(2008_007676,"img/faces/2008_007676.jpg",7)
-FACETEST(2009_004587,"img/faces/2009_004587.jpg",2)
-FACETEST(bald_guys,"img/faces/bald_guys.jpg",24)
-FACETEST(dogs,"img/faces/dogs.jpg",0)
-FACETEST(Tom_Cruise_avp_2014_4,"img/faces/Tom_Cruise_avp_2014_4.jpg",1)
+FACETEST(2007_007763,7)
+FACETEST(2008_001009,2)
+FACETEST(2008_001322,3)
+FACETEST(2008_002079,6)
+FACETEST(2008_002470,6)
+FACETEST(2008_002506,3)
+FACETEST(2008_004176,7)
+FACETEST(2008_007676,7)
+FACETEST(2009_004587,2)
+FACETEST(bald_guys,24)
+FACETEST(dogs,0)
+FACETEST(Tom_Cruise_avp_2014_4,1)
 
-// }  // namespace
+int main(int argc, char** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
 
-// Step 3. Call RUN_ALL_TESTS() in main().
-//
-// We do this by linking in src/gtest_main.cc file, which consists of
-// a main() function which calls RUN_ALL_TESTS() for us.
-//
-// This runs all the tests you've defined, prints the result, and
-// returns 0 if successful, or 1 otherwise.
-//
-// Did you notice that we didn't register the tests?  The
-// RUN_ALL_TESTS() macro magically knows about all the tests we
-// defined.  Isn't this convenient?
-int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
+  if (argc != 2)
+  {
+      printf("Usage: %s <image_folder_name>\n", argv[0]);
+      return -1;
+  }
 
-    return RUN_ALL_TESTS();
+  // parse folder for image files
+  glob(String(argv[1]), files, true);
+
+  return RUN_ALL_TESTS();
+
 }

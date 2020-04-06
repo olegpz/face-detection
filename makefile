@@ -1,4 +1,4 @@
-all: 	libfacedetect.so detect-image
+all: 	libfacedetect.so detect-image unittest
 
 MAKEFILES = makefile
 
@@ -34,7 +34,10 @@ libfacedetect.so: $(OBJ)
 	g++ $(CFLAGS) -fPIC -shared -o $@ $(OBJ) $(LFLAGS)
 
 detect-image: $(OBJ) $(MAKEFILES) detect-image.cpp face-detection.cpp face-detection.h libfacedetect.so
-	g++ face-detection.cpp detect-image.cpp $(CFLAGS)  $(LFLAGS) -O0 -o detect-image -lfacedetect -L.
+	g++ face-detection.cpp detect-image.cpp $(CFLAGS)  $(LFLAGS) -O3 -o detect-image -lfacedetect -L.
+
+unittest: $(OBJ) $(MAKEFILES) unittest.cpp face-detection.cpp face-detection.h libfacedetect.so
+	g++ unittest.cpp -O3  $(CFLAGS)  $(LFLAGS) -o unittest -lgtest -lpthread -lfacedetect -L.
 
 test:	$(TST_SRC) $(MAKEFILES)
 	export LD_LIBRARY_PATH=.

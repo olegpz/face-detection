@@ -33,7 +33,7 @@ $(OBJ): %.o: %.cpp $(MAKEFILES)
 libfacedetect.so: $(OBJ)
 	g++ $(CFLAGS) -fPIC -shared -o $@ $(OBJ) $(LFLAGS)
 
-detect-image: $(OBJ) $(MAKEFILES) detect-image.cpp
+detect-image: $(OBJ) $(MAKEFILES) detect-image.cpp face-detection.cpp face-detection.h libfacedetect.so
 	g++ face-detection.cpp detect-image.cpp $(CFLAGS)  $(LFLAGS) -O0 -o detect-image -lfacedetect -L.
 
 test:	$(TST_SRC) $(MAKEFILES)

@@ -51,6 +51,7 @@ static void write2json(String json_file, vector<image_info> img_inf)
       for (auto i = 0; i < img_inf[k].Nfaces; i++)
       {
         js << "                {" << endl;
+        js << "                    \"confidence\": " << img_inf[k].confidence[i] << "," << endl;
         js << "                    \"x\": " << img_inf[k].face[i].x << ",  \"y\": " << img_inf[k].face[i].y << "," << endl;
         js << "                    \"width\": " << img_inf[k].face[i].w << ",  \"height\": " << img_inf[k].face[i].h << endl;
         js << "                }";
@@ -92,27 +93,42 @@ static String img2res(String img_file, String img_folder, String res_folder)
 
 vector<image_info> face_detection(String folder, String res_folder)
 {
-  String json_file = res_folder + "/result.json";
+  String json_file = folder + "/result.json";
 
   // parse folder for image files
   vector<String> files; 
   glob(folder, files, true);
 
   size_t Nfiles = files.size();
-  vector<image_info> image(Nfiles);
+  vector<image_info> images;
 
   for (size_t k = 0; k < Nfiles; k++)
   {
       // load an image
-      image[k].res_file_name = files[k];
-      cout << "File : " << files[k] << endl;
-      Mat in_image = imread(files[k]); 
-      if(in_image.empty())
+      Mat         in_image;
+      image_info  image;
+
+      try
       {
-          fprintf(stderr, "Can not load the image file %s.\n", files[k].c_str());
-          image[0] = {0, 0};
-          return image;
+        in_image = imread(files[k]); 
       }
+      catch (std::exception& e)
+      {
+        cout << e.what() << endl;
+        continue;
+      }
+      
+      if (in_image.empty())
+      {
+        // fprintf(stderr, "Can not load the image file %s.\n", files[k].c_str());
+        continue;
+      }
+      else
+      {
+        image.res_file_name = files[k];
+        cout << "File : " << files[k] << endl;
+      }
+      
 
       ///////////////////////////////////////////
       // CNN face detection 
@@ -121,38 +137,43 @@ vector<image_info> face_detection(String folder, String res_folder)
       TickMeter cvtm;
       cvtm.start();
 
-      image[k].face = objectdetect_cnn((unsigned char*)(in_image.ptr(0)), in_image.cols, in_image.rows, in_image.step);
+      image.face = objectdetect_cnn((unsigned char*)(in_image.ptr(0)), in_image.cols, in_image.rows, in_image.step);
       
       cvtm.stop();    
       printf("time = %gms\n", cvtm.getTimeMilli());
 
       //print the detection results
       
-      image[k].Nfaces =(int)image[k].face.size();
-      printf("%d faces detected.\n", image[k].Nfaces);
-      Mat result_image = in_image.clone();
+      image.Nfaces =(int)image.face.size();
+      printf("%d faces detected.\n", image.Nfaces);
+      Mat res_image = in_image.clone();
 
-      for(int i = 0; i < image[k].Nfaces; i++)
+      for(int i = 0; i < image.Nfaces; i++)
       {
-        int x = image[k].face[i].x;
-        int y = image[k].face[i].y;
-        int w = image[k].face[i].w;
-        int h = image[k].face[i].h;
+        int x = image.face[i].x;
+        int y = image.face[i].y;
+        int w = image.face[i].w;
+        int h = image.face[i].h;
+        image.confidence.push_back(sqrt(image.face[i].score) * 100);
 
-        blur(result_image(Rect(x, y, w, h)), result_image(Rect(x, y, w, h)), Size(w/4, h/4));
+        // rectangle(res_image, Rect(x, y, w, h), Scalar(0, 255, 0), 2);
+        blur(res_image(Rect(x, y, w, h)), res_image(Rect(x, y, w, h)), Size(w/4, h/4));
+        // printf("face %d: confidence=%g, [%d, %d, %d, %d]\n", 
+        //         i, image[k].confidence[i], x, y, w, h);
 
       } // end for detect faces
 
-      // imshow("result", result_image);
-      resize(result_image, result_image, Size(result_image.cols/2, result_image.rows/2));
-      image[k].res_file_name = img2res(files[k],folder,res_folder);
-      imwrite(image[k].res_file_name, result_image);
+      // imshow("result", res_image);
+      resize(res_image, res_image, Size(res_image.cols/2, res_image.rows/2));
+      image.res_file_name = img2res(files[k],folder,res_folder);
+      imwrite(image.res_file_name, res_image);
+      images.push_back(image);
 
       // waitKey();
   } // end for files
 
-  write2json(json_file, image);
+  write2json(json_file, images);
 
-  return image;
+  return images;
   
 } /* face_detection */

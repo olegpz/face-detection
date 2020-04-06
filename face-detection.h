@@ -42,9 +42,6 @@ struct image_info
   vector<FaceRect>  face;
 };
 
-//define the buffer size. Do not change the size!
-#define DETECT_BUFFER_SIZE 0x20000
-
 std::vector<image_info> face_detection(cv::String folder, cv::String res_folder);
 
 #endif /* FACE_DETECTION_H */

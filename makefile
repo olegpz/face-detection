@@ -28,7 +28,7 @@ LFLAGS = \
 	g++ $(CFLAGS) $(LFLAGS) -c $< -o $@
 
 $(OBJ): %.o: %.cpp $(MAKEFILES)
-	g++ $(CFLAGS) $(LFLAGS) -fPIC -O0 -c $< -o $@
+	g++ $(CFLAGS) $(LFLAGS) -fPIC -O3 -c $< -o $@
 
 libfacedetect.so: $(OBJ)
 	g++ $(CFLAGS) -fPIC -shared -o $@ $(OBJ) $(LFLAGS)

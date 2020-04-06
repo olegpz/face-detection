@@ -361,30 +361,34 @@ vector<FaceRect> objectdetect_cnn(unsigned char * rgbImageData, int width, int h
     for (int i = 0; i < facesInfo.width; i++)
     {
         float score = facesInfo.getElement(i, 0, 0);
-        float bbxmin = facesInfo.getElement(i, 0, 1);
-        float bbymin = facesInfo.getElement(i, 0, 2);
-        float bbxmax = facesInfo.getElement(i, 0, 3);
-        float bbymax = facesInfo.getElement(i, 0, 4);
-        FaceRect r;
-        r.score = score;
-        r.x = int(bbxmin * width + 0.5f);
-        r.y = int(bbymin * height + 0.5f);
-        r.w = int((bbxmax - bbxmin) * width + 0.5f);
-        r.h = int((bbymax - bbymin) * height + 0.5f);
-
-        //// convert the rectangle to a square
-        //r.w = int( ((bbxmax - bbxmin) * width + (bbymax - bbymin) * height + 1) / 2);
-        //r.h = r.w;
-        //r.x = int(((bbxmin + bbxmax) * width - r.w + 0.5f) / 2);
-        //r.y = int(((bbymin + bbymax) * height - r.h + 0.5f) / 2);
-
-        for (int lmidx = 0; lmidx < 5; lmidx++)
+        double confidence = score*score*100;
+        if (confidence > 90.0)
         {
-            r.lm[lmidx * 2] = int(facesInfo.getElement(i, 0, 5 + lmidx * 2) * width + 0.5f);
-            r.lm[lmidx * 2 + 1] = int(facesInfo.getElement(i, 0, 5 + lmidx * 2 + 1) * height + 0.5f);
-        }
+            float bbxmin = facesInfo.getElement(i, 0, 1);
+            float bbymin = facesInfo.getElement(i, 0, 2);
+            float bbxmax = facesInfo.getElement(i, 0, 3);
+            float bbymax = facesInfo.getElement(i, 0, 4);
+            FaceRect r;
+            r.score = score;
+            r.x = int(bbxmin * width + 0.5f);
+            r.y = int(bbymin * height + 0.5f);
+            r.w = int((bbxmax - bbxmin) * width + 0.5f);
+            r.h = int((bbymax - bbymin) * height + 0.5f);
 
-        faces.push_back(r);
+            //// convert the rectangle to a square
+            //r.w = int( ((bbxmax - bbxmin) * width + (bbymax - bbymin) * height + 1) / 2);
+            //r.h = r.w;
+            //r.x = int(((bbxmin + bbxmax) * width - r.w + 0.5f) / 2);
+            //r.y = int(((bbymin + bbymax) * height - r.h + 0.5f) / 2);
+
+            for (int lmidx = 0; lmidx < 5; lmidx++)
+            {
+                r.lm[lmidx * 2] = int(facesInfo.getElement(i, 0, 5 + lmidx * 2) * width + 0.5f);
+                r.lm[lmidx * 2 + 1] = int(facesInfo.getElement(i, 0, 5 + lmidx * 2 + 1) * height + 0.5f);
+            }
+
+            faces.push_back(r);
+        }
     }
     TIME_END("copy result");
 

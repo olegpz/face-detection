@@ -27,19 +27,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// A sample program demonstrating using Google C++ testing framework.
-
-// This sample shows how to write a simple unit test for a function,
-// using Google C++ testing framework.
-//
-// Writing a unit test using Google C++ testing framework is easy as 1-2-3:
-
-
-// Step 1. Include necessary header files such that the stuff your
-// test logic needs is declared.
-//
-// Don't forget gtest.h, which declares the testing framework.
-
 #include <limits.h>
 #include <opencv2/opencv.hpp>
 #include "facedetectcnn.h"
@@ -70,8 +57,10 @@ TEST(FaceDetectionTest,NAME) {                                                  
   face = objectdetect_cnn((unsigned char*)(in_image.ptr(0)), in_image.cols, in_image.rows, in_image.step);  \
   /* Tests face detection of image with faces. */                                                           \
   EXPECT_EQ(NFACES, face.size());                                                                           \
-}
+} /* FACETEST */
 
+// Find, detect images and check result (number of faces)
+// Images took (https://github.com/davisking/dlib) from Dlib C++ Library (http://dlib.net/)
 FACETEST(2007_007763,7)
 FACETEST(2008_001009,2)
 FACETEST(2008_001322,3)
@@ -100,4 +89,4 @@ int main(int argc, char** argv)
 
   return RUN_ALL_TESTS();
 
-}
+} /* main */

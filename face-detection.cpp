@@ -20,6 +20,7 @@
 *
 * Version   Date        Author          Change Description
 *
+*- 1.0.0    07/04/2020  Oleg Prosekov   First release
 *- 0.0.1    25/03/2020  Oleg Prosekov   First issue
 *
 ******************************************************************************/
@@ -29,7 +30,6 @@
 #include <opencv2/opencv.hpp>
 #include "facedetectcnn.h"
 
-#include <map>
 #include <vector>
 #include <iostream>
 #include "face-detection.h"
@@ -86,7 +86,7 @@ static String img2res(String img_file, String img_folder, String res_folder)
   {
     cerr << err.what() << endl;
   }
-  
+
   return res_file;
 
 } /* img2res */
@@ -96,12 +96,13 @@ vector<image_info> face_detection(String folder, String res_folder)
   String json_file = folder + "/result.json";
 
   // parse folder for image files
-  vector<String> files; 
+  vector<String> files;
   glob(folder, files, true);
 
   size_t Nfiles = files.size();
   vector<image_info> images;
 
+  // Process all files
   for (size_t k = 0; k < Nfiles; k++)
   {
       // load an image
@@ -110,14 +111,14 @@ vector<image_info> face_detection(String folder, String res_folder)
 
       try
       {
-        in_image = imread(files[k]); 
+        in_image = imread(files[k]);
       }
       catch (std::exception& e)
       {
         cout << e.what() << endl;
         continue;
       }
-      
+
       if (in_image.empty())
       {
         // fprintf(stderr, "Can not load the image file %s.\n", files[k].c_str());
@@ -128,22 +129,21 @@ vector<image_info> face_detection(String folder, String res_folder)
         image.res_file_name = files[k];
         cout << "File : " << files[k] << endl;
       }
-      
+
 
       ///////////////////////////////////////////
-      // CNN face detection 
-      // Best detection rate
+      // CNN face detection
       //////////////////////////////////////////
       TickMeter cvtm;
       cvtm.start();
 
       image.face = objectdetect_cnn((unsigned char*)(in_image.ptr(0)), in_image.cols, in_image.rows, in_image.step);
-      
-      cvtm.stop();    
+
+      cvtm.stop();
       printf("time = %gms\n", cvtm.getTimeMilli());
 
-      //print the detection results
-      
+      // store the detection results
+
       image.Nfaces =(int)image.face.size();
       printf("%d faces detected.\n", image.Nfaces);
       Mat res_image = in_image.clone();
@@ -157,23 +157,28 @@ vector<image_info> face_detection(String folder, String res_folder)
         image.confidence.push_back(sqrt(image.face[i].score) * 100);
 
         // rectangle(res_image, Rect(x, y, w, h), Scalar(0, 255, 0), 2);
+
         blur(res_image(Rect(x, y, w, h)), res_image(Rect(x, y, w, h)), Size(w/4, h/4));
-        // printf("face %d: confidence=%g, [%d, %d, %d, %d]\n", 
+
+        // printf("face %d: confidence=%g, [%d, %d, %d, %d]\n",
         //         i, image[k].confidence[i], x, y, w, h);
 
       } // end for detect faces
 
       // imshow("result", res_image);
+
       resize(res_image, res_image, Size(res_image.cols/2, res_image.rows/2));
       image.res_file_name = img2res(files[k],folder,res_folder);
+      // Write results to image files
       imwrite(image.res_file_name, res_image);
       images.push_back(image);
 
       // waitKey();
   } // end for files
 
+  // Write JSON file which contains info of input images
   write2json(json_file, images);
 
   return images;
-  
+
 } /* face_detection */

@@ -20,6 +20,7 @@
 *
 * Version   Date        Author          Change Description
 *
+*- 1.0.0    07/04/2020  Oleg Prosekov   First release
 *- 0.0.1    25/03/2020  Oleg Prosekov   First issue
 *
 ******************************************************************************/
